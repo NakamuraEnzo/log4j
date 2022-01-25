@@ -47,8 +47,6 @@ foreach ($volume in $volumes)
     }
 }
 
-Write-Host $log4jFound
-
 if (!$log4jFound) {
     Write-Host "Log4j not found"
 }
