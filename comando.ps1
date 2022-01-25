@@ -5,7 +5,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force
 
 # Write-Host "Start iterating drives..."
 $volumes = Get-WmiObject win32_volume -filter "drivetype=3"
-$log4jFound = 0
+$log4jFound = $false
 foreach ($volume in $volumes)
 {
     $driveletter = $volume.driveletter # e.g. C:
@@ -21,7 +21,7 @@ foreach ($volume in $volumes)
         # Use unzip -l | findstr JndiLookup as paranoia check.
         # Write-Host "== Find log4j-core*.jar files... =="
         Get-ChildItem -Path $drivename -Filter log4j-core*.jar -Recurse -ErrorAction SilentlyContinue | % {
-            $log4jFound = 1
+            $log4jFound = $true
             Write-Host "== $($_.FullName) =="
 
             Write-Host "> zip.exe -q -d `"$($_.FullName)`" `"org/apache/logging/log4j/core/lookup/JndiLookup.class`""
@@ -37,7 +37,7 @@ foreach ($volume in $volumes)
         # Write-Host "== Find uncompressed JndiLookup.class files... =="
         Get-ChildItem -Path $drivename -Filter JndiLookup.class -Recurse -ErrorAction SilentlyContinue | % {
             Write-Host "== $($_.FullName) =="
-            $log4jFound = 1
+            $log4jFound = $true
 
             Write-Host "> Remove-Item -Path `"$($_.FullName)`" -Force"
             Remove-Item -Path $_.FullName -Force
@@ -47,7 +47,9 @@ foreach ($volume in $volumes)
     }
 }
 
-if ($log4jFound == 0) {
+Write-Host $log4jFound
+
+if (!$log4jFound) {
     Write-Host "Log4j not found"
 }
 
